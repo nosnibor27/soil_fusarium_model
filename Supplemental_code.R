@@ -554,7 +554,7 @@ sum.80 <- rollapply(df.zoo, 80, sum, align = c("right"))
 sum.90 <- rollapply(df.zoo, 90, sum, align = c("right"))
 
 #merging together
-df.final <- merge.zoo(sum.10,sum.20,sum.30,sum.40,sum.50,sum.60,sum.70,sum.80,sum.10)
+df.final <- merge.zoo(sum.10,sum.20,sum.30,sum.40,sum.50,sum.60,sum.70,sum.80,sum.90)
 df.final <- df.final[complete.cases(df.final),]
 final.index = index(df.final)
 
