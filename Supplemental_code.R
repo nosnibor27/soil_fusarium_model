@@ -46,7 +46,7 @@ sampling.dates = as.Date(c("2016-06-11","2016-06-18","2016-06-25",
 #converting into zoo object
 df.zoo = read.zoo(af, format = "%Y-%m-%d")
 
-#calculateing  rolling sums for seasonal term (prior 90 days)
+#calculating  rolling sums for seasonal term (prior 90 days)
 sum.90 <- rollapply(df.zoo, 90, sum, align = c("right"))
 df.final <- sum.90
 df.final <- df.final[complete.cases(df.final),]
@@ -67,7 +67,7 @@ ds <- ds[-1]
 #converting into dataframe
 bf <- data.frame(df.final)
 
-#total precip 90 d prior
+#total precip 90 d prior for every field & sampling date
 p.90 <- c(bf$p.1[ds[1]],bf$p.2[ds[1]],bf$p.3[ds[1]],bf$p.4[ds[2]],bf$p.5[ds[2]],bf$p.6[ds[2]],bf$p.7[ds[3]],bf$p.8[ds[3]],bf$p.9[ds[3]],
           bf$p.1[ds[4]],bf$p.2[ds[4]],bf$p.3[ds[4]],bf$p.4[ds[5]],bf$p.5[ds[5]],bf$p.6[ds[5]],bf$p.7[ds[6]],bf$p.8[ds[6]],bf$p.9[ds[6]],
           bf$p.1[ds[7]],bf$p.2[ds[7]],bf$p.3[ds[7]],bf$p.4[ds[8]],bf$p.5[ds[8]],bf$p.6[ds[8]],bf$p.7[ds[9]],bf$p.8[ds[9]],bf$p.9[ds[9]],
@@ -76,7 +76,7 @@ p.90 <- c(bf$p.1[ds[1]],bf$p.2[ds[1]],bf$p.3[ds[1]],bf$p.4[ds[2]],bf$p.5[ds[2]],
           bf$p.1[ds[16]],bf$p.2[ds[16]],bf$p.3[ds[16]],bf$p.4[ds[17]],bf$p.5[ds[17]],bf$p.6[ds[17]],bf$p.7[ds[18]],bf$p.8[ds[18]],bf$p.9[ds[18]],
           bf$p.1[ds[19]],bf$p.2[ds[19]],bf$p.3[ds[19]],bf$p.4[ds[20]],bf$p.5[ds[20]],bf$p.6[ds[20]],bf$p.7[ds[21]],bf$p.8[ds[21]],bf$p.9[ds[21]],
           bf$p.1[ds[22]],bf$p.2[ds[22]],bf$p.3[ds[22]],bf$p.4[ds[23]],bf$p.5[ds[23]],bf$p.6[ds[23]],bf$p.7[ds[24]],bf$p.8[ds[24]],bf$p.9[ds[24]])
-#total evap 90 d prior
+#total evap 90 d prior for every field & sampling date
 e.90 <- c(bf$evap.1[ds[1]],bf$evap.2[ds[1]],bf$evap.3[ds[1]],bf$evap.4[ds[2]],bf$evap.5[ds[2]],bf$evap.6[ds[2]],bf$evap.7[ds[3]],bf$evap.8[ds[3]],bf$evap.9[ds[3]],
           bf$evap.1[ds[4]],bf$evap.2[ds[4]],bf$evap.3[ds[4]],bf$evap.4[ds[5]],bf$evap.5[ds[5]],bf$evap.6[ds[5]],bf$evap.7[ds[6]],bf$evap.8[ds[6]],bf$evap.9[ds[6]],
           bf$evap.1[ds[7]],bf$evap.2[ds[7]],bf$evap.3[ds[7]],bf$evap.4[ds[8]],bf$evap.5[ds[8]],bf$evap.6[ds[8]],bf$evap.7[ds[9]],bf$evap.8[ds[9]],bf$evap.9[ds[9]],
@@ -86,11 +86,11 @@ e.90 <- c(bf$evap.1[ds[1]],bf$evap.2[ds[1]],bf$evap.3[ds[1]],bf$evap.4[ds[2]],bf
           bf$evap.1[ds[19]],bf$evap.2[ds[19]],bf$evap.3[ds[19]],bf$evap.4[ds[20]],bf$evap.5[ds[20]],bf$evap.6[ds[20]],bf$evap.7[ds[21]],bf$evap.8[ds[21]],bf$evap.9[ds[21]],
           bf$evap.1[ds[22]],bf$evap.2[ds[22]],bf$evap.3[ds[22]],bf$evap.4[ds[23]],bf$evap.5[ds[23]],bf$evap.6[ds[23]],bf$evap.7[ds[24]],bf$evap.8[ds[24]],bf$evap.9[ds[24]])
 
-#adding historic onservations to dataframe
+#adding historic observations to dataframe
 df$p.h.90 <- rep(p.90,each=9)
 df$e.h.90 <- rep(e.90,each=9)
 
-#calculating difference
+#calculating difference, also called "atmospheric water balance"
 df$p.d.90 <- df$p.h.90-df$e.h.90
 
 #historic grand mean and sd
@@ -151,7 +151,7 @@ e.1 <- extract.samples(m.reference,n=10000)
 ns <- c("Field 1","Field 2","Field 3","Field 4","Field 5","Field 6","Field 7","Field 8","Field 9",
         rep(" ",63))
 
-#season sequence
+#season sequence labels
 seasons <- as.vector(c("Jun 2016",rep(" ",8),
                        "Sep 2016",rep(" ",8),
                        "Dec 2016",rep(" ",8),
@@ -187,10 +187,12 @@ for(n in 1:72){
   box()
   axis(1,at=seq(0,1,0.25),las=2,labels=xs[n])
   axis(2,at=seq(0,7500,2500),las=1,labels=ys[n])
+  #plotting 100 exceedance curves from posterior distribution
   for(i in 1:100){
     lines(rev(seq(0.01,0.99,0.01)),-log(1-seq(0.01,0.99,0.01))/exp(e.1$a_sample[i,n]),col=col.alpha("red",0.05))
   }
   x= df$f.c.ppg[fs[n]:(fs[n]+8)]
+  #plotting empirical dataset as points
   points((1:length(x)-0.5)/length(x),sort(x,decreasing=TRUE),type="p",pch=16,col="black")
   mtext(ns[n],line=-1.5,side=3)
   mtext(seasons[n],line=0,side=3)
@@ -202,10 +204,15 @@ mtext("PPG", side = 2, outer = TRUE, line = 3)
 
 #function to simulate a N by N quadrat field with mean M and standard deviation S
 field_simulator <- function(N,M,S){
+  #creating a distribution of rate parameters
   L <- rnorm(N^2,mean=M,sd=S)
+  #Generating 1 random draw from an exponential distribution for each rate parameter
   P <- rexp(N^2,rate=exp(L))
+  #converting from vector into matrix
   field <- matrix(data=P,nrow=N,ncol=N)
+  #rounding to whole number
   field <- round(field)
+  #plotting
   par(mar=c(0,0,0,0))
   plot(0,type="n",xlim=c(0,N),ylim=c(0,N),axes=FALSE)
   for( i in 1:N){
@@ -391,9 +398,13 @@ SEASONAL_RETURN_PLOT <- function(n,max,min,lab){
   box()
   axis(1,at=seq(1,7,1),las=1,labels=lab)
   axis(2,at=seq(min,max,25),las=2)
+  #shading in inter-decile range
   shade(mf.q[c(1,5),seq(n,63,9)],lim=seq(1,7,1),col=col.alpha("black",0.15))
+  #shading in inter-quantile range
   shade(mf.q[c(2,4),seq(n,63,9)],lim=seq(1,7,1),col=col.alpha("black",0.15))
+  #plotting line for median
   lines(y=mf.q[3,seq(n,63,9)],x=seq(1:7),col="red",lwd=2)
+  #adding probability of seasonal increase
   text(labels=paste("P = ",round(pr.si[seq(n,63,9)],digits=2)),x=seq(1,7,1),y=rep(min,7),pos=3)
   mtext(paste(" Field",n),side=3,line=-2,adj=0,cex=1.5)
   abline(h=0)
@@ -427,6 +438,7 @@ m.field.sample <- map2stan(
     log(lambda) <- a + a_field[field] + a_sample[sample],
     a_field[field] ~ dnorm(0,sigma_field),
     a_sample[sample] ~ dnorm(0,sigma_sample),
+    #informative prior for "a" using the posterior from m.reference
     a ~ dnorm(-4.8,0.22),
     sigma_field ~ dexp(1),
     sigma_sample ~ dexp(1)
@@ -526,7 +538,7 @@ for (n in 1:39){
 
 #Section 8: Generating Figure 6----
 
-#function to standardize values
+#old function to standardize values
 standardizer <- function(x) (x-mean(x))/(sd(x))
 
 #soil moisture reference frame
@@ -579,7 +591,6 @@ ys <- c(2010,2011,2012,2013,2014,2015,2016,2017,2018)
 #generating figure
 par(oma=c(5,5,1,1))
 par(mar=c(0.5,0.5,0.5,0.5))
-
 par(mfrow=c(9,1))
 
 plot(0,type="n",xlim=c(0,3012),ylim=c(-3,3),xlab="Year",ylab="Standard deviation",main=NULL,axes=FALSE)
@@ -703,10 +714,10 @@ e.3 <- extract.samples(m.1,n=10000)
 
 #Section 10:Generating Figure 7----
 
-#collecting model outpur
+#collecting model output
 link.cm <- link(m.1,n=10000)
 
-#only keeping one set of rates per sampling iteration
+#only keeping one set of rates per sampling iteration (link makes a column for every observation)
 sim.rates <- link.cm$lambda[,seq(1,648,9)]
 
 #name sequence for fields
@@ -1036,21 +1047,21 @@ for(n in 1:N){
   print(paste(locations$town[n],"saved"))
 }
 
-#loading the 3-d arrays (historical simulation)
+#option to load the 3-d arrays (historical simulation)
 for(n in 1:N){
   assign(paste0(locations$town[n],"_hist"),
          readRDS(paste0(locations$town[n],"_hist.rdata")))
   print(paste(locations$town[n],"historical simulation loaded"))
 }
 
-#loading the 3-d arrays (RCP 4.5)
+#option to load the 3-d arrays (RCP 4.5)
 for(n in 1:N){
   assign(paste0(locations$town[n],"_45"),
          readRDS(paste0(locations$town[n],"_45.rdata")))
   print(paste(locations$town[n],"RCP 4.5 loaded"))
 }
 
-#loading the 3-d arrays (RCP 8.5)
+#option to load the 3-d arrays (RCP 8.5)
 for(n in 1:N){
   assign(paste0(locations$town[n],"_85"),
          readRDS(paste0(locations$town[n],"_85.rdata")))
@@ -1169,8 +1180,9 @@ CULMORUM_PROBABILITY <- function(n,m,xl,yl){
   B <- get(paste0(locations$town[n],"_45"))
   C <- get(paste0(locations$town[n],"_85"))
   #adding ETo dimension
+  #looping through the models (historical simulation)
   for(j in 1:20){
-    #calculating GDD by model
+    #calculating ETo by model
     A[7,j,] <- ETo(locations$elevation[n],
                    A[1,j,], A[2,j,], A[4,j,], A[5,j,], A[6,j,],
                    J=historical_doy,lat=(pi/180)*locations$lat[n])
@@ -1178,9 +1190,9 @@ CULMORUM_PROBABILITY <- function(n,m,xl,yl){
     assign(paste0(locations$town[n],"_hist"),A)
     print(paste(locations$town[n],"historical simulation now has ETo for",model[j]))
   }
-  #looping through the models
+  #looping through the models (RCP 4.5)
   for(j in 1:20){
-    #calculating GDD by model
+    #calculating ETo by model
     B[7,j,] <- ETo(locations$elevation[n],
                    B[1,j,], B[2,j,], B[4,j,], B[5,j,], B[6,j,],
                    J=future_doy,lat=(pi/180)*locations$lat[n])
@@ -1188,7 +1200,7 @@ CULMORUM_PROBABILITY <- function(n,m,xl,yl){
     assign(paste0(locations$town[n],"_45"),A)
     print(paste(locations$town[n],"RCP 4.5 now has ETo for",model[j]))
   }
-  #looping through the models
+  #looping through the models (RCP 8.5)
   for(j in 1:20){
     #calculating GDD by model
     C[7,j,] <- ETo(locations$elevation[n],
@@ -1198,7 +1210,7 @@ CULMORUM_PROBABILITY <- function(n,m,xl,yl){
     assign(paste0(locations$town[n],"_45"),C)
     print(paste(locations$town[n],"RCP 8.5 now has ETo for",model[j]))
   }
-  #calculating sums for precip [var=8]
+  #calculating sums for precipitation [var=8]
   for (j in 1:20){
     model_zoo <- as.zoo(A[3,j,])
     model_sum <- rollapply(model_zoo,90,sum,align=c("right"))
@@ -1214,7 +1226,7 @@ CULMORUM_PROBABILITY <- function(n,m,xl,yl){
     C[8,j,] <- c(rep(0,89),as.vector(model_sum))
     print(paste("Model",j,"completed for precip"))
   }
-  #calculating sums for precip [var=9]
+  #calculating sums for potential evapotranspiration [var=9]
   for (j in 1:20){
     model_zoo <- as.zoo(A[7,j,])
     model_sum <- rollapply(model_zoo,90,sum,align=c("right"))
@@ -1234,6 +1246,7 @@ CULMORUM_PROBABILITY <- function(n,m,xl,yl){
   intercept <- e.3$a + e.3$a_field[,n]
   slope <- e.3$b + e.3$b_field[,n]
   
+  #compiling progabilities of historical simulation to use as reference
   for (j in 1:20){
     #starting data frame
     hist_frame <- as.data.frame(historical_dates)
@@ -1257,8 +1270,9 @@ CULMORUM_PROBABILITY <- function(n,m,xl,yl){
   }
   hist_reference <- apply(model_predictions_hist,1,mean)
   
-  #test
+  #compiling probabilities (RCP 4.5)
   prob_matrix_45 <- matrix(NA,20,94)
+  #adding model predictions (RCP 4.5)
   for (j in 1:20){
     #starting data frame
     fut_frame_45 <- as.data.frame(future_dates)
@@ -1285,8 +1299,9 @@ CULMORUM_PROBABILITY <- function(n,m,xl,yl){
   }
   prob_vector_45 <- apply(prob_matrix_45,2,mean)
   
+  #compiling probabilities (RCP 8.5)
   prob_matrix_85 <- matrix(NA,20,94)
-  #adding model predictions RCP 8.5
+  #adding model predictions (RCP 8.5)
   for (j in 1:20){
     #starting data frame
     fut_frame_85 <- as.data.frame(future_dates)
@@ -1313,13 +1328,14 @@ CULMORUM_PROBABILITY <- function(n,m,xl,yl){
   }
   prob_vector_85 <- apply(prob_matrix_85,2,mean)
   
+  #creating subplot
   plot(0,type="n",xlim=c(0,94),ylim=c(0,1),xlab="Year",
        ylab="Probability",
        main=" ",axes=FALSE)
   box()
   axis(1,at=seq(4,94,10),las=2,labels=xl)
   axis(2,at=seq(0,1,0.25),las=1,labels=yl)
-  #choose which to plot here, currently set to RCP 4.5
+  #choose which to plot here with "#", currently set to RCP 4.5
   lines(x=seq(2,94,1),y=prob_vector_45[2:94],pch=16,col="blue")
   #lines(x=seq(2,94,1),y=prob_vector_85[2:94],pch=16,col="red")
   abline(h=0.5)
@@ -1379,7 +1395,7 @@ CULMORUM_FORECASTER <- function(n,m,s){
   }
   #looping through the models
   for(j in 1:20){
-    #calculating GDD by model
+    #calculating ETo by model
     B[7,j,] <- ETo(locations$elevation[n],
                    B[1,j,], B[2,j,], B[4,j,], B[5,j,], B[6,j,],
                    J=future_doy,lat=(pi/180)*locations$lat[n])
@@ -1389,7 +1405,7 @@ CULMORUM_FORECASTER <- function(n,m,s){
   }
   #looping through the models
   for(j in 1:20){
-    #calculating GDD by model
+    #calculating ETo by model
     C[7,j,] <- ETo(locations$elevation[n],
                    C[1,j,], C[2,j,], C[4,j,], C[5,j,], C[6,j,],
                    J=future_doy,lat=(pi/180)*locations$lat[n])
@@ -1397,7 +1413,7 @@ CULMORUM_FORECASTER <- function(n,m,s){
     assign(paste0(locations$town[n],"_45"),C)
     print(paste(locations$town[n],"RCP 8.5 now has ETo for",model[j]))
   }
-  #calculating sums for precip [var=8]
+  #calculating sums for precipitation [var=8]
   for (j in 1:20){
     model_zoo <- as.zoo(A[3,j,])
     model_sum <- rollapply(model_zoo,90,sum,align=c("right"))
@@ -1413,7 +1429,7 @@ CULMORUM_FORECASTER <- function(n,m,s){
     C[8,j,] <- c(rep(0,89),as.vector(model_sum))
     print(paste("Model",j,"completed for precip"))
   }
-  #calculating sums for precip [var=9]
+  #calculating sums for potential evapotranspiration [var=9]
   for (j in 1:20){
     model_zoo <- as.zoo(A[7,j,])
     model_sum <- rollapply(model_zoo,90,sum,align=c("right"))
@@ -1429,12 +1445,15 @@ CULMORUM_FORECASTER <- function(n,m,s){
     C[9,j,] <- c(rep(0,89),as.vector(model_sum))
     print(paste("Model",j,"completed for evap"))
   }
+  
   #finding relevant pieces of model
   intercept <- e.3$a+e.3$a_field[,n]
   slope <- e.3$b+e.3$b_field[,n]
+  
   #field scale
   field_mu <- mean(1/exp(intercept))
   field_sd <- sd(1/exp(intercept))
+  
   #historical plot
   plot(0,type="n",xlim=c(0,56),ylim=c(field_mu-s*field_sd,field_mu+s*field_sd),xlab="Year",
        ylab="PPG",
@@ -1470,6 +1489,7 @@ CULMORUM_FORECASTER <- function(n,m,s){
     lines(y=model_track,x=seq(1:56),col=col.alpha("black",0.5),lwd=1.5)
     abline(h=field_mu)
   }
+  
   #RCP 4.5 plot
   plot(0,type="n",xlim=c(0,94),ylim=c(field_mu-s*field_sd,field_mu+s*field_sd),xlab="Year",
        ylab="PPG",
@@ -1505,6 +1525,7 @@ CULMORUM_FORECASTER <- function(n,m,s){
     lines(y=model_track,x=seq(1:94),col=col.alpha("blue",0.5),lwd=1.5)
     abline(h=field_mu)
   }
+  
   #RCP 8.5 plot
   plot(0,type="n",xlim=c(0,94),ylim=c(field_mu-s*field_sd,field_mu+s*field_sd),xlab="Year",
        ylab="PPG",
