@@ -1,6 +1,6 @@
 # soil_fusarium_model
 
-# Figure 1 (mapping)
+# Figure 1
 
 **Heat maps of a 2 year agricultural soil survey across the Inland Pacific Northwest.** Each subplot represents a 3 × 3 sampling region consisting of 9 quadrats 1 acre (4047 m^2) in size. Rows of subplots represent different fields (N=9), columns represent different sampling iterations (N=8). Values within each quadrat are *F. culmorum* propagules per gram soil (PPG). The specific values do not represent the precision of the soil dilution procedure, but are the result of standardizing counts by the moisture content of the soil samples. The sampling region within a field, along with quadrat positions, remained constant across all sampling iterations.
 
